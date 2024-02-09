@@ -44,3 +44,4 @@ Tarefas importantes que ainda precisam ser feitas, mas que devido ao tempo ainda
 [] Integração do API Gatewaty com o Cognito  
 [] Otimização CI/CD  
 [] Melhoria em mensagens de retorno dos endpoints da API  
+[] Integração com Frontend
