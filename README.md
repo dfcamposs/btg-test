@@ -39,9 +39,9 @@ S3 - usado no deploy da lambda via Cloud Formation
 TODOs:  
 Tarefas importantes que ainda precisam ser feitas, mas que devido ao tempo ainda não foi possível:
   
-[] Testes Unitários  
-[] Testes Integrados  
-[] Integração do API Gatewaty com o Cognito  
-[] Otimização CI/CD  
-[] Melhoria em mensagens de retorno dos endpoints da API  
-[] Integração com Frontend
+[ ] Testes Unitários  
+[ ] Testes Integrados  
+[ ] Integração do API Gatewaty com o Cognito  
+[ ] Otimização CI/CD  
+[ ] Melhoria em mensagens de retorno dos endpoints da API  
+[ ] Integração com Frontend
