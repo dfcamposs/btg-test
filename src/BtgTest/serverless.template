@@ -1,0 +1,142 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "An AWS Serverless Application that uses the ASP.NET Core framework running in Amazon Lambda with DynamoDB integration.",
+  "Parameters": {
+    "TableName": {
+      "Type": "String",
+      "Description": "Name of the DynamoDB table"
+    },
+    "BucketName": {
+      "Type": "String",
+      "Description": "Name of the S3 bucket"
+    }
+  },
+  "Conditions": {},
+  "Resources": {
+    "AspNetCoreFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "BtgTest::BtgTest.LambdaEntryPoint::FunctionHandlerAsync",
+        "Runtime": "dotnet8",
+        "Environment": {
+          "Variables": {
+            "AUTH_ISSUER": "",
+            "AUTH_AUDIENCE": "",
+            "AUTH_SECRET_KEY": "2d400b193182176ac2aafae47e1f08be"
+          }
+        },
+        "MemorySize": 256,
+        "Timeout": 30,
+        "Role": null,
+        "Policies": [
+          "AWSLambda_FullAccess"
+        ],
+        "CodeUri": {
+          "Bucket": { "Ref": "BucketName" },
+          "Key": "function.zip"
+        },
+        "Events": {
+          "ProxyResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/{proxy+}",
+              "Method": "ANY"
+            }
+          },
+          "RootResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "ANY"
+            }
+          },
+          "Metadata": {
+            "BuildCommand": "dotnet publish -c Release -o out",
+            "LocalLambda": "BtgTest::BtgTest.LambdaEntryPoint::FunctionHandlerAsync"
+          }
+        }
+      }
+    },
+    "DynamoDBCrudPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "DynamoDBCrudPolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "AspNetCoreFunctionRole"
+          }
+        ],
+        "TableName": {
+          "Ref": "TableName"
+        }
+      }
+    },
+    "DynamoDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "LimitManager",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "accountNumber",
+            "AttributeType": "N"
+          },
+          {
+            "AttributeName": "branch",
+            "AttributeType": "N"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "accountNumber",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "branch",
+            "KeyType": "RANGE"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST"
+      }
+    },
+    "S3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": { "Ref": "BucketName" },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::{\"Ref\": \"BucketName\"}",
+                "arn:aws:s3:::{\"Ref\": \"BucketName\"}/*"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "BucketName" }
+      }
+    }
+  },
+  "Outputs": {}
+}
